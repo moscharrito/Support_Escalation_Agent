@@ -37,5 +37,5 @@ class FeedbackLoop:
     
     async def _trigger_model_update(self):
         """Queue model retraining job"""
-        # Add to training queue with recent feedback examples
+        # Add to training queue with recent feedback
         pass

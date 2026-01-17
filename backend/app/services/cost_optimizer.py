@@ -25,7 +25,7 @@ class CostOptimizer:
             ctx_tokens = len(self.encoding.encode(ctx_text))
             
             if token_count + ctx_tokens > max_tokens:
-                # Truncate or summarize
+                # Truncate or summarize tokens to fit
                 remaining = max_tokens - token_count
                 truncated = self._truncate_to_tokens(ctx_text, remaining)
                 combined += truncated

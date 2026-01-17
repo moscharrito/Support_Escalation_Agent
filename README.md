@@ -76,9 +76,6 @@ For detailed system design documentation, see (see /system-design/ folder)
 ## Contributing
 Contributions welcome. Please submit pull requests to the main branch.
 
-## License
-[Specify License]
-
 ## Author
 Moshood Bolaji Salaudeen
 

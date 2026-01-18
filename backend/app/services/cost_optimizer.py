@@ -1,5 +1,6 @@
 # app/services/cost_optimizer.py
 from functools import lru_cache
+from typing import List, Dict
 import tiktoken
 
 class CostOptimizer:

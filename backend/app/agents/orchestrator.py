@@ -25,19 +25,19 @@ class SupportAgentOrchestrator:
 
         try:
             # Step 1: Input Validation
-            validation = await self.guardrails.pipeline.validate_input(ticket)
+            validation = await self.guardrail_pipeline.validate_input(ticket)
             if not validation['safe']:
                 return self._create_escalation(
                     ticket,
                     reason=f"Input validation failed: {validation['reason']}"
                 )
-            
-            # Step 2: Classification
-            classification = await self.classifier.classify_ticket(ticket)
+
+            # Step 2: Classification and Context Gathering (parallel)
+            classification_task = self.classifier.classify(ticket)
             context_task = self.context_gatherer.gather(ticket)
 
             classification, context = await asyncio.gather(
-                classification,
+                classification_task,
                 context_task
             )
 
@@ -85,7 +85,7 @@ class SupportAgentOrchestrator:
         
         except Exception as e:
             await self.metrics.record_error(ticket_id, str(e))
-            return self._create_escalation(ticket, reason=f"Processing error: ")
+            return self._create_escalation(ticket, reason=f"Processing error: {str(e)}")
         
     def decide_action(self, classification: Dict) -> str:
         """Decide logic for routing"""

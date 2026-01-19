@@ -31,11 +31,24 @@ class DatabaseManager:
     async def connect(self):
         """Establish database connection"""
         if self._client is None:
-            self._client = AsyncIOMotorClient(self.mongodb_url)
-            self._db = self._client[self.database_name]
+            try:
+                self._client = AsyncIOMotorClient(
+                    self.mongodb_url,
+                    serverSelectionTimeoutMS=5000  # 5 second timeout
+                )
+                # Test the connection
+                await self._client.admin.command('ping')
+                self._db = self._client[self.database_name]
 
-            # Create indexes
-            await self._create_indexes()
+                # Create indexes
+                await self._create_indexes()
+                self._connected = True
+            except Exception as e:
+                print(f"Warning: Could not connect to MongoDB: {e}")
+                print("Running in demo mode without database persistence")
+                self._client = None
+                self._db = None
+                self._connected = False
 
     async def _create_indexes(self):
         """Create necessary database indexes"""

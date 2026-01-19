@@ -7,7 +7,6 @@ from ..models.ticket import (
 )
 from ..models.response import ResponseOverride, ResponseTrace, ResponseMetrics
 from ..services.auth import verify_api_key
-from ..database import TicketRepository, ResponseRepository, FeedbackRepository
 from typing import AsyncIterator, Dict, Optional, List
 import json
 import uuid
@@ -15,10 +14,21 @@ from datetime import datetime
 
 router = APIRouter(prefix="/api")
 
-# Initialize repositories
-ticket_repo = TicketRepository()
-response_repo = ResponseRepository()
-feedback_repo = FeedbackRepository()
+
+# Lazy initialization of repositories
+def get_ticket_repo():
+    from ..database import TicketRepository
+    return TicketRepository()
+
+
+def get_response_repo():
+    from ..database import ResponseRepository
+    return ResponseRepository()
+
+
+def get_feedback_repo():
+    from ..database import FeedbackRepository
+    return FeedbackRepository()
 
 
 @router.post("/tickets", response_model=TicketResponse)
@@ -39,7 +49,7 @@ async def create_ticket(
     result = await orchestrator.process_ticket(ticket_data)
 
     # Store ticket in database
-    background_tasks.add_task(ticket_repo.create, {**ticket_data, **result})
+    background_tasks.add_task(get_ticket_repo().create, {**ticket_data, **result})
 
     # Send notifications in background
     background_tasks.add_task(send_notifications, result)
@@ -91,7 +101,7 @@ async def get_ticket(
     api_key: str = Depends(verify_api_key)
 ):
     """Get a specific ticket by ID"""
-    ticket = await ticket_repo.get_by_id(ticket_id)
+    ticket = await get_ticket_repo().get_by_id(ticket_id)
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return ticket
@@ -107,7 +117,7 @@ async def update_ticket(
     update_data = update.model_dump(exclude_unset=True)
     update_data["updated_at"] = datetime.utcnow()
 
-    success = await ticket_repo.update(ticket_id, update_data)
+    success = await get_ticket_repo().update(ticket_id, update_data)
     if not success:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
@@ -121,7 +131,7 @@ async def override_ticket_response(
     api_key: str = Depends(verify_api_key)
 ):
     """Override an auto-generated response with human response"""
-    ticket = await ticket_repo.get_by_id(ticket_id)
+    ticket = await get_ticket_repo().get_by_id(ticket_id)
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
@@ -134,10 +144,10 @@ async def override_ticket_response(
         "updated_at": datetime.utcnow()
     }
 
-    await ticket_repo.update(ticket_id, update_data)
+    await get_ticket_repo().update(ticket_id, update_data)
 
     # Record feedback for model improvement
-    await feedback_repo.create({
+    await get_feedback_repo().create({
         "ticket_id": ticket_id,
         "response_id": override.response_id,
         "feedback_type": "correction",
@@ -267,7 +277,7 @@ async def submit_feedback(
 ):
     """Submit feedback on a response"""
     feedback["created_at"] = datetime.utcnow()
-    feedback_id = await feedback_repo.create(feedback)
+    feedback_id = await get_feedback_repo().create(feedback)
     return {"status": "received", "feedback_id": feedback_id}
 
 

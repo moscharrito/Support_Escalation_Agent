@@ -11,6 +11,7 @@ class DatabaseManager:
     _instance: Optional["DatabaseManager"] = None
     _client: Optional[AsyncIOMotorClient] = None
     _db: Optional[AsyncIOMotorDatabase] = None
+    _connected: bool = False
 
     def __new__(cls):
         if cls._instance is None:
@@ -78,10 +79,13 @@ class DatabaseManager:
             self._db = None
 
     @property
-    def db(self) -> AsyncIOMotorDatabase:
+    def is_connected(self) -> bool:
+        """Check if database is connected"""
+        return self._connected
+
+    @property
+    def db(self) -> Optional[AsyncIOMotorDatabase]:
         """Get database instance"""
-        if self._db is None:
-            raise RuntimeError("Database not connected. Call connect() first.")
         return self._db
 
     @property

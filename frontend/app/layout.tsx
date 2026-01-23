@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Support Escalation Agent',
-  description: 'AI-powered support ticket processing and escalation',
+  description: 'AI-powered real-time support ticket processing and escalation',
 }
 
 export default function RootLayout({

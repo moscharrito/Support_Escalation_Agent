@@ -183,7 +183,7 @@ export default function TicketDashboard() {
     }, [fetchTickets]);
 
     const filters = [
-        { key: 'all', label: 'All' },
+        { key: 'all', label: 'All Tickets' },
         { key: 'pending', label: 'Pending' },
         { key: 'auto_resolved', label: 'Resolved' },
         { key: 'escalated', label: 'Escalated' }
@@ -191,8 +191,11 @@ export default function TicketDashboard() {
 
     if (loading && tickets.length === 0) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="w-10 h-10 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+            <div className="min-h-screen bg-gradient-mesh flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-2 border-slate-600 border-t-indigo-500 rounded-full animate-spin" />
+                    <p className="text-sm text-slate-400">Loading tickets...</p>
+                </div>
             </div>
         );
     }
@@ -204,28 +207,28 @@ export default function TicketDashboard() {
                 <header className="mb-10">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-light text-white tracking-tight">
-                                Support AI
+                            <h1 className="text-2xl font-semibold text-slate-100 tracking-tight">
+                                Support Dashboard
                             </h1>
-                            <p className="text-sm text-white/40 mt-1">
-                                Intelligent ticket processing
+                            <p className="text-sm text-slate-400 mt-1">
+                                GenAI-powered ticket management
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             {/* Live indicator */}
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                <span className="text-xs text-white/50">Live</span>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-xs font-medium text-emerald-400">Live</span>
                             </div>
 
                             {/* Refresh button */}
                             <button
                                 onClick={fetchTickets}
-                                className="btn-ghost p-2.5"
+                                className="btn-secondary p-2.5 rounded-xl"
                                 aria-label="Refresh"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                                 </svg>
                             </button>
@@ -238,36 +241,40 @@ export default function TicketDashboard() {
                     <MetricCard
                         title="Resolved"
                         value={`${metrics.autoResolvedRate}%`}
-                        subtitle={`${metrics.totalTickets} tickets`}
+                        subtitle={`${metrics.totalTickets} total tickets`}
                         icon="resolved"
+                        variant="success"
                         trend="up"
                         trendValue="+5%"
                     />
                     <MetricCard
                         title="Confidence"
                         value={`${Math.round(metrics.avgConfidence * 100)}%`}
-                        subtitle="Average score"
+                        subtitle="Average AI score"
                         icon="confidence"
+                        variant="info"
                         showRing
                         ringValue={metrics.avgConfidence * 100}
                     />
                     <MetricCard
                         title="Escalated"
                         value={`${metrics.escalationRate}%`}
-                        subtitle="Needs review"
+                        subtitle="Needs human review"
                         icon="escalation"
+                        variant="error"
                         trend={metrics.escalationRate > 20 ? 'down' : 'neutral'}
                     />
                     <MetricCard
                         title="Pending"
                         value={metrics.pendingCount}
-                        subtitle="In queue"
+                        subtitle="Awaiting processing"
                         icon="pending"
+                        variant="warning"
                     />
                 </section>
 
                 {/* Filters */}
-                <div className="flex items-center gap-2 mb-6">
+                <div className="flex items-center gap-2 mb-6 p-1 bg-slate-800/50 rounded-full w-fit">
                     {filters.map(({ key, label }) => (
                         <button
                             key={key}
@@ -295,10 +302,15 @@ export default function TicketDashboard() {
                 </div>
 
                 {/* Footer */}
-                <footer className="mt-16 text-center">
-                    <p className="text-xs text-white/20">
-                        Support Escalation Agent
-                    </p>
+                <footer className="mt-16 pt-8 border-t border-slate-800">
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs text-slate-500">
+                            Support Escalation Agent
+                        </p>
+                        <p className="text-xs text-slate-600">
+                            Auto-refreshes every 30s
+                        </p>
+                    </div>
                 </footer>
             </div>
         </div>

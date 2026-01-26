@@ -172,16 +172,22 @@ export default function DecisionTrace({ ticket }: DecisionTraceProps) {
         });
     };
 
+    const getConfidenceColor = (confidence: number) => {
+        if (confidence >= 0.8) return 'bg-emerald-500';
+        if (confidence >= 0.5) return 'bg-amber-500';
+        return 'bg-red-500';
+    };
+
     if (!ticket) {
         return (
             <div className="glass p-8 h-full flex flex-col items-center justify-center text-center">
-                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-5">
-                    <svg className="w-7 h-7 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-5">
+                    <svg className="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                     </svg>
                 </div>
-                <p className="text-white/40 font-light">Decision Trace</p>
-                <p className="text-white/20 text-sm mt-1">Select a ticket to view</p>
+                <p className="text-slate-300 font-medium">Decision Trace</p>
+                <p className="text-slate-500 text-sm mt-1">Select a ticket to view AI reasoning</p>
             </div>
         );
     }
@@ -189,7 +195,7 @@ export default function DecisionTrace({ ticket }: DecisionTraceProps) {
     if (loading) {
         return (
             <div className="glass p-8 h-full flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-slate-600 border-t-indigo-500 rounded-full animate-spin" />
             </div>
         );
     }
@@ -198,18 +204,17 @@ export default function DecisionTrace({ ticket }: DecisionTraceProps) {
         <div className="glass p-6 h-full overflow-auto scrollbar-thin fade-in">
             {/* Header */}
             <div className="mb-6">
-                <h2 className="text-lg font-medium text-white mb-1">Decision Trace</h2>
-                <p className="text-sm text-white/40 truncate">{ticket.subject}</p>
+                <h2 className="text-lg font-medium text-slate-100 mb-1">Decision Trace</h2>
+                <p className="text-sm text-slate-500 truncate">{ticket.subject}</p>
             </div>
 
             {/* Response Preview */}
             {ticket.response && (
-                <div className="glass-subtle p-4 mb-6">
+                <div className="glass-subtle p-4 mb-6 border-l-2 border-emerald-500">
                     <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1 h-1 rounded-full bg-white" />
-                        <span className="text-xs font-medium text-white/50 uppercase tracking-wider">AI Response</span>
+                        <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">AI Response</span>
                     </div>
-                    <p className="text-sm text-white/70 leading-relaxed line-clamp-3">
+                    <p className="text-sm text-slate-300 leading-relaxed line-clamp-3">
                         {ticket.response}
                     </p>
                 </div>
@@ -217,19 +222,19 @@ export default function DecisionTrace({ ticket }: DecisionTraceProps) {
 
             {/* Escalation Reason */}
             {ticket.escalation_reason && (
-                <div className="glass-subtle p-4 mb-6 border-white/10">
+                <div className="glass-subtle p-4 mb-6 border-l-2 border-red-500">
                     <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1 h-1 rounded-full bg-white/50 animate-pulse" />
-                        <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Escalated</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                        <span className="text-xs font-medium text-red-400 uppercase tracking-wider">Escalated</span>
                     </div>
-                    <p className="text-sm text-white/60">{ticket.escalation_reason}</p>
+                    <p className="text-sm text-slate-400">{ticket.escalation_reason}</p>
                 </div>
             )}
 
             {/* Timeline */}
             <div className="relative">
                 {/* Vertical line */}
-                <div className="absolute left-4 top-6 bottom-6 w-px bg-gradient-to-b from-white/20 via-white/10 to-transparent" />
+                <div className="absolute left-4 top-6 bottom-6 w-px bg-gradient-to-b from-indigo-500/30 via-slate-600/20 to-transparent" />
 
                 <div className="space-y-4">
                     {decisionSteps.map((step, index) => {
@@ -243,32 +248,32 @@ export default function DecisionTrace({ ticket }: DecisionTraceProps) {
                             >
                                 {/* Step indicator */}
                                 <div className={`absolute left-0 top-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                                    isSuccess ? 'bg-white/10 text-white/70' : 'bg-white/5 text-white/40'
+                                    isSuccess ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-700/50 text-slate-500'
                                 }`}>
                                     {getStepIcon(step.action)}
                                 </div>
 
                                 {/* Content */}
                                 <div
-                                    className="glass-subtle p-4 cursor-pointer transition-all duration-200 hover:bg-white/[0.04]"
+                                    className="glass-subtle p-4 cursor-pointer transition-all duration-200 hover:bg-slate-700/30"
                                     onClick={() => setExpandedStep(isExpanded ? null : index)}
                                 >
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-medium text-white/80">{step.step}</span>
-                                        <span className="text-xs text-white/30 font-mono">{formatTime(step.timestamp)}</span>
+                                        <span className="text-sm font-medium text-slate-200">{step.step}</span>
+                                        <span className="text-xs text-slate-500 font-mono">{formatTime(step.timestamp)}</span>
                                     </div>
-                                    <p className="text-xs text-white/40 leading-relaxed">{step.reasoning}</p>
+                                    <p className="text-xs text-slate-400 leading-relaxed">{step.reasoning}</p>
 
                                     {/* Confidence */}
                                     {step.confidence > 0 && (
                                         <div className="mt-3 flex items-center gap-3">
                                             <div className="progress-bar flex-1">
                                                 <div
-                                                    className="progress-bar-fill"
+                                                    className={`h-full rounded-full transition-all duration-700 ease-out ${getConfidenceColor(step.confidence)}`}
                                                     style={{ width: `${step.confidence * 100}%` }}
                                                 />
                                             </div>
-                                            <span className="text-xs text-white/40 tabular-nums">
+                                            <span className="text-xs text-slate-400 tabular-nums">
                                                 {Math.round(step.confidence * 100)}%
                                             </span>
                                         </div>
@@ -281,17 +286,24 @@ export default function DecisionTrace({ ticket }: DecisionTraceProps) {
             </div>
 
             {/* Summary */}
-            <div className="mt-6 pt-6 border-t border-white/5">
+            <div className="mt-6 pt-6 border-t border-slate-700/50">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="glass-subtle p-3">
-                        <span className="text-xs text-white/30 block mb-1">Result</span>
-                        <span className="text-sm font-medium text-white/80">
+                        <span className="text-xs text-slate-500 block mb-1">Result</span>
+                        <span className={`text-sm font-medium ${
+                            ticket.status === 'auto_resolved' ? 'text-emerald-400' :
+                            ticket.status === 'escalated' ? 'text-red-400' :
+                            ticket.status === 'pending' ? 'text-amber-400' : 'text-blue-400'
+                        }`}>
                             {ticket.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                         </span>
                     </div>
                     <div className="glass-subtle p-3">
-                        <span className="text-xs text-white/30 block mb-1">Confidence</span>
-                        <span className="text-sm font-medium text-white/80">
+                        <span className="text-xs text-slate-500 block mb-1">Confidence</span>
+                        <span className={`text-sm font-medium ${
+                            ticket.confidence >= 0.8 ? 'text-emerald-400' :
+                            ticket.confidence >= 0.5 ? 'text-amber-400' : 'text-red-400'
+                        }`}>
                             {Math.round(ticket.confidence * 100)}%
                         </span>
                     </div>

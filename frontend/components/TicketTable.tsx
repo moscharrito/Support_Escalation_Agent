@@ -38,16 +38,16 @@ export default function TicketTable({
 
     const getStatusBadge = (status: Ticket['status']) => {
         const config = {
-            pending: { label: 'Pending', class: 'status-pending' },
-            auto_resolved: { label: 'Resolved', class: 'status-resolved' },
-            escalated: { label: 'Escalated', class: 'status-escalated' },
-            in_progress: { label: 'In Progress', class: 'status-in-progress' }
+            pending: { label: 'Pending', class: 'status-pending', dotClass: 'bg-amber-400' },
+            auto_resolved: { label: 'Resolved', class: 'status-resolved', dotClass: 'bg-emerald-400' },
+            escalated: { label: 'Escalated', class: 'status-escalated', dotClass: 'bg-red-400' },
+            in_progress: { label: 'In Progress', class: 'status-in-progress', dotClass: 'bg-blue-400' }
         };
-        const { label, class: className } = config[status];
+        const { label, class: className, dotClass } = config[status];
 
         return (
             <span className={`status-badge ${className}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${status === 'auto_resolved' ? 'bg-white' : 'bg-current'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
                 {label}
             </span>
         );
@@ -55,31 +55,32 @@ export default function TicketTable({
 
     const getPriorityText = (priority: Ticket['priority']) => {
         const config = {
-            low: 'priority-low',
-            medium: 'priority-medium',
-            high: 'priority-high',
-            critical: 'priority-critical'
+            low: { class: 'text-slate-400', label: 'Low' },
+            medium: { class: 'text-amber-400', label: 'Medium' },
+            high: { class: 'text-orange-400', label: 'High' },
+            critical: { class: 'text-red-400 font-semibold', label: 'Critical' }
         };
 
         return (
-            <span className={`text-xs uppercase tracking-wider ${config[priority]}`}>
-                {priority}
+            <span className={`text-xs uppercase tracking-wider ${config[priority].class}`}>
+                {config[priority].label}
             </span>
         );
     };
 
     const getConfidenceBar = (confidence: number) => {
         const percentage = Math.round(confidence * 100);
+        const barColor = percentage >= 80 ? 'bg-emerald-500' : percentage >= 50 ? 'bg-amber-500' : 'bg-red-500';
 
         return (
             <div className="flex items-center gap-3">
                 <div className="progress-bar w-16">
                     <div
-                        className="progress-bar-fill"
+                        className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}
                         style={{ width: `${percentage}%` }}
                     />
                 </div>
-                <span className="text-xs text-white/50 tabular-nums w-8">
+                <span className="text-xs text-slate-400 tabular-nums w-8">
                     {percentage}%
                 </span>
             </div>
@@ -119,13 +120,13 @@ export default function TicketTable({
     if (tickets.length === 0) {
         return (
             <div className="glass p-16 text-center">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-white/5 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-slate-700/50 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                     </svg>
                 </div>
-                <p className="text-white/40 text-lg font-light">No tickets found</p>
-                <p className="text-white/20 text-sm mt-2">Tickets will appear here when created</p>
+                <p className="text-slate-400 text-lg font-light">No tickets found</p>
+                <p className="text-slate-600 text-sm mt-2">Tickets will appear here when created</p>
             </div>
         );
     }
@@ -134,10 +135,10 @@ export default function TicketTable({
         <>
             <div className="glass overflow-hidden fade-in">
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-white/5">
+                <div className="px-6 py-5 border-b border-slate-700/50">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-medium text-white">Tickets</h2>
-                        <span className="text-sm text-white/30">{tickets.length} total</span>
+                        <h2 className="text-lg font-medium text-slate-100">Tickets</h2>
+                        <span className="text-sm text-slate-500">{tickets.length} total</span>
                     </div>
                 </div>
 
@@ -164,10 +165,10 @@ export default function TicketTable({
                                 >
                                     <td>
                                         <div className="max-w-xs">
-                                            <p className="text-sm font-medium text-white/90 truncate">
+                                            <p className="text-sm font-medium text-slate-200 truncate">
                                                 {ticket.subject}
                                             </p>
-                                            <p className="text-xs text-white/30 mt-0.5 font-mono">
+                                            <p className="text-xs text-slate-500 mt-0.5 font-mono">
                                                 {ticket.id.slice(0, 8)}
                                             </p>
                                         </div>
@@ -176,7 +177,7 @@ export default function TicketTable({
                                     <td>{getPriorityText(ticket.priority)}</td>
                                     <td>{getConfidenceBar(ticket.confidence)}</td>
                                     <td>
-                                        <span className="text-sm text-white/40">
+                                        <span className="text-sm text-slate-500">
                                             {formatDate(ticket.created_at)}
                                         </span>
                                     </td>
@@ -187,14 +188,14 @@ export default function TicketTable({
                                                     e.stopPropagation();
                                                     handleOverrideClick(ticket);
                                                 }}
-                                                className="btn-ghost text-xs"
+                                                className="btn-ghost text-xs text-indigo-400 hover:text-indigo-300"
                                             >
                                                 Override
                                             </button>
                                         )}
                                         {ticket.status === 'escalated' && (
-                                            <span className="inline-flex items-center gap-1.5 text-xs text-white/50">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-white/50 animate-pulse" />
+                                            <span className="inline-flex items-center gap-1.5 text-xs text-red-400">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
                                                 Review
                                             </span>
                                         )}
@@ -212,10 +213,10 @@ export default function TicketTable({
                     <div className="glass max-w-xl w-full p-6 slide-up" onClick={e => e.stopPropagation()}>
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-medium text-white">Override Response</h3>
+                            <h3 className="text-lg font-medium text-slate-100">Override Response</h3>
                             <button
                                 onClick={() => setOverrideModal({ isOpen: false, ticketId: '', currentResponse: '' })}
-                                className="btn-ghost p-2"
+                                className="btn-ghost p-2 text-slate-400 hover:text-slate-200"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -225,11 +226,11 @@ export default function TicketTable({
 
                         {/* Current Response */}
                         <div className="mb-5">
-                            <label className="block text-xs font-medium text-white/40 uppercase tracking-wider mb-2">
-                                Current AI Response
+                            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
+                                Current Model Response
                             </label>
                             <div className="glass-subtle p-4">
-                                <p className="text-sm text-white/60 leading-relaxed">
+                                <p className="text-sm text-slate-400 leading-relaxed">
                                     {overrideModal.currentResponse || 'No response generated'}
                                 </p>
                             </div>
@@ -237,7 +238,7 @@ export default function TicketTable({
 
                         {/* New Response */}
                         <div className="mb-6">
-                            <label className="block text-xs font-medium text-white/40 uppercase tracking-wider mb-2">
+                            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
                                 Your Response
                             </label>
                             <textarea
@@ -260,7 +261,7 @@ export default function TicketTable({
                                 onClick={handleOverrideSubmit}
                                 className="btn-primary text-sm"
                             >
-                                Submit
+                                Submit Override
                             </button>
                         </div>
                     </div>

@@ -9,6 +9,7 @@ interface MetricCardProps {
     trend?: 'up' | 'down' | 'neutral';
     trendValue?: string;
     icon?: 'tickets' | 'confidence' | 'escalation' | 'pending' | 'resolved' | 'time';
+    variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
     showRing?: boolean;
     ringValue?: number;
 }
@@ -20,6 +21,7 @@ export default function MetricCard({
     trend,
     trendValue,
     icon = 'tickets',
+    variant = 'default',
     showRing = false,
     ringValue = 0
 }: MetricCardProps) {
@@ -51,6 +53,48 @@ export default function MetricCard({
         if (strValue.includes('.')) return animatedValue.toFixed(1);
         return Math.round(animatedValue).toLocaleString();
     };
+
+    const getVariantStyles = () => {
+        switch (variant) {
+            case 'success':
+                return {
+                    iconBg: 'bg-emerald-500/20',
+                    iconColor: 'text-emerald-400',
+                    accentColor: '#10b981',
+                    ringStroke: '#10b981'
+                };
+            case 'warning':
+                return {
+                    iconBg: 'bg-amber-500/20',
+                    iconColor: 'text-amber-400',
+                    accentColor: '#f59e0b',
+                    ringStroke: '#f59e0b'
+                };
+            case 'error':
+                return {
+                    iconBg: 'bg-red-500/20',
+                    iconColor: 'text-red-400',
+                    accentColor: '#ef4444',
+                    ringStroke: '#ef4444'
+                };
+            case 'info':
+                return {
+                    iconBg: 'bg-blue-500/20',
+                    iconColor: 'text-blue-400',
+                    accentColor: '#3b82f6',
+                    ringStroke: '#3b82f6'
+                };
+            default:
+                return {
+                    iconBg: 'bg-indigo-500/20',
+                    iconColor: 'text-indigo-400',
+                    accentColor: '#6366f1',
+                    ringStroke: '#6366f1'
+                };
+        }
+    };
+
+    const variantStyles = getVariantStyles();
 
     const getIcon = () => {
         const iconClass = "w-5 h-5";
@@ -99,8 +143,10 @@ export default function MetricCard({
     const getTrendIndicator = () => {
         if (!trend || trend === 'neutral') return null;
 
+        const trendColor = trend === 'up' ? 'text-emerald-400' : 'text-red-400';
+
         return (
-            <div className={`flex items-center gap-1 text-xs font-medium ${trend === 'up' ? 'text-white/60' : 'text-white/40'}`}>
+            <div className={`flex items-center gap-1 text-xs font-medium ${trendColor}`}>
                 {trend === 'up' ? (
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -125,18 +171,18 @@ export default function MetricCard({
             <div className="flex items-start justify-between">
                 <div className="flex-1">
                     {/* Icon */}
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4 text-white/70">
+                    <div className={`w-10 h-10 rounded-xl ${variantStyles.iconBg} flex items-center justify-center mb-4 ${variantStyles.iconColor}`}>
                         {getIcon()}
                     </div>
 
                     {/* Title */}
-                    <p className="text-sm font-medium text-white/40 uppercase tracking-wider mb-2">
+                    <p className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">
                         {title}
                     </p>
 
                     {/* Value */}
                     <div className="flex items-baseline gap-3">
-                        <p className="text-4xl font-light text-white tracking-tight">
+                        <p className="text-4xl font-light text-slate-100 tracking-tight">
                             {formatValue()}
                         </p>
                         {getTrendIndicator()}
@@ -144,7 +190,7 @@ export default function MetricCard({
 
                     {/* Subtitle */}
                     {subtitle && (
-                        <p className="text-sm text-white/30 mt-2">
+                        <p className="text-sm text-slate-500 mt-2">
                             {subtitle}
                         </p>
                     )}
@@ -163,7 +209,6 @@ export default function MetricCard({
                                 strokeWidth="3"
                             />
                             <circle
-                                className="progress-ring-fill"
                                 cx="32"
                                 cy="32"
                                 r={radius}
@@ -172,10 +217,12 @@ export default function MetricCard({
                                 strokeLinecap="round"
                                 strokeDasharray={circumference}
                                 strokeDashoffset={offset}
+                                stroke={variantStyles.ringStroke}
+                                style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1)' }}
                             />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-xs font-medium text-white/70">
+                            <span className="text-xs font-medium text-slate-300">
                                 {Math.round(ringValue)}%
                             </span>
                         </div>

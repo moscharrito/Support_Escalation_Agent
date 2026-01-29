@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 interface Ticket {
     id: string;
@@ -23,6 +23,8 @@ interface TicketTableProps {
     selectedId?: string;
 }
 
+const ITEMS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
+
 export default function TicketTable({
     tickets,
     onOverride,
@@ -35,6 +37,55 @@ export default function TicketTable({
         currentResponse: string;
     }>({ isOpen: false, ticketId: '', currentResponse: '' });
     const [newResponse, setNewResponse] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    // Calculate pagination
+    const totalPages = Math.ceil(tickets.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    const paginatedTickets = useMemo(() => {
+        return tickets.slice(startIndex, endIndex);
+    }, [tickets, startIndex, endIndex]);
+
+    // Reset to page 1 when tickets change
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [tickets.length, itemsPerPage]);
+
+    const goToPage = (page: number) => {
+        setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+    };
+
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 4; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1);
+                pages.push('...');
+                for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('...');
+                for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+                pages.push('...');
+                pages.push(totalPages);
+            }
+        }
+
+        return pages;
+    };
 
     const getStatusBadge = (status: Ticket['status']) => {
         const config = {
@@ -138,7 +189,22 @@ export default function TicketTable({
                 <div className="px-6 py-5 border-b border-slate-700/50">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-medium text-slate-100">Tickets</h2>
-                        <span className="text-sm text-slate-500">{tickets.length} total</span>
+                        <div className="flex items-center gap-4">
+                            {/* Items per page selector */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-500">Show</span>
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                    className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500/50"
+                                >
+                                    {ITEMS_PER_PAGE_OPTIONS.map(option => (
+                                        <option key={option} value={option}>{option}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <span className="text-sm text-slate-500">{tickets.length} total</span>
+                        </div>
                     </div>
                 </div>
 
@@ -156,7 +222,7 @@ export default function TicketTable({
                             </tr>
                         </thead>
                         <tbody>
-                            {tickets.map((ticket, index) => (
+                            {paginatedTickets.map((ticket, index) => (
                                 <tr
                                     key={ticket.id}
                                     onClick={() => onSelect(ticket)}
@@ -205,6 +271,108 @@ export default function TicketTable({
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="px-6 py-4 border-t border-slate-700/50">
+                        <div className="flex items-center justify-between">
+                            {/* Showing info */}
+                            <div className="text-sm text-slate-500">
+                                Showing <span className="text-slate-300 font-medium">{startIndex + 1}</span> to{' '}
+                                <span className="text-slate-300 font-medium">{Math.min(endIndex, tickets.length)}</span> of{' '}
+                                <span className="text-slate-300 font-medium">{tickets.length}</span> tickets
+                            </div>
+
+                            {/* Page controls */}
+                            <div className="flex items-center gap-1">
+                                {/* First page */}
+                                <button
+                                    onClick={() => goToPage(1)}
+                                    disabled={currentPage === 1}
+                                    className={`p-2 rounded-lg transition-all duration-200 ${
+                                        currentPage === 1
+                                            ? 'text-slate-600 cursor-not-allowed'
+                                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                                    }`}
+                                    title="First page"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
+                                    </svg>
+                                </button>
+
+                                {/* Previous page */}
+                                <button
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className={`p-2 rounded-lg transition-all duration-200 ${
+                                        currentPage === 1
+                                            ? 'text-slate-600 cursor-not-allowed'
+                                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                                    }`}
+                                    title="Previous page"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                    </svg>
+                                </button>
+
+                                {/* Page numbers */}
+                                <div className="flex items-center gap-1 mx-2">
+                                    {getPageNumbers().map((page, index) => (
+                                        page === '...' ? (
+                                            <span key={`ellipsis-${index}`} className="px-2 text-slate-500">...</span>
+                                        ) : (
+                                            <button
+                                                key={page}
+                                                onClick={() => goToPage(page as number)}
+                                                className={`min-w-[32px] h-8 px-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                                    currentPage === page
+                                                        ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        )
+                                    ))}
+                                </div>
+
+                                {/* Next page */}
+                                <button
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className={`p-2 rounded-lg transition-all duration-200 ${
+                                        currentPage === totalPages
+                                            ? 'text-slate-600 cursor-not-allowed'
+                                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                                    }`}
+                                    title="Next page"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </button>
+
+                                {/* Last page */}
+                                <button
+                                    onClick={() => goToPage(totalPages)}
+                                    disabled={currentPage === totalPages}
+                                    className={`p-2 rounded-lg transition-all duration-200 ${
+                                        currentPage === totalPages
+                                            ? 'text-slate-600 cursor-not-allowed'
+                                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                                    }`}
+                                    title="Last page"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 4.5l7.5 7.5-7.5 7.5m6-15l7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Override Modal */}
